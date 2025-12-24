@@ -33,15 +33,18 @@ export default function App() {
   async function compressImage(task: ImageTask) {
     if (!enableCompress) return task.file;
 
+    // 确保使用原始文件进行压缩，而不是之前的处理结果
+    const originalFile = task.file;
+
     // 先尝试一次简单压缩
-    let compressed = await safeCompress(task.file, quality);
+    let compressed = await safeCompress(originalFile, quality);
 
     // 如果压缩效果不明显，尝试更强的压缩
-    if (compressed.size > task.file.size * 0.8) {
+    if (compressed.size > originalFile.size * 0.8) {
       // 如果压缩后还大于原文件的80%
       console.log("尝试更强压缩...");
-      compressed = await imageCompression(task.file, {
-        maxSizeMB: (task.file.size / 1024 / 1024) * 0.5, // 直接目标50%大小
+      compressed = await imageCompression(originalFile, {
+        maxSizeMB: (originalFile.size / 1024 / 1024) * 0.5, // 直接目标50%大小
         maxWidthOrHeight: 1920,
         initialQuality: Math.max(0.5, quality - 0.3), // 更低质量
         useWebWorker: true,
@@ -56,7 +59,7 @@ export default function App() {
       task.status = "processing";
       setTasks((t) => [...t]);
 
-      let file = task.file;
+      let file = task.file; // 使用原始文件，而不是之前的结果
 
       // 先进行压缩
       if (enableCompress) {
@@ -134,7 +137,7 @@ export default function App() {
       setTasks((t) => [...t]);
 
       // 只进行压缩，不进行格式转换
-      const compressed = await compressImage(task);
+      const compressed = await compressImage(task); // 使用原始文件（task.file）进行压缩
 
       // 创建结果Blob，保持原始格式
       const blob = new Blob([await compressed.arrayBuffer()], {
@@ -157,7 +160,7 @@ export default function App() {
       setTasks((t) => [...t]);
 
       // 只进行格式转换，不进行压缩
-      const blob = await convertByCanvas(task.file, format, quality);
+      const blob = await convertByCanvas(task.file, format, quality); // 使用原始文件
 
       task.resultBlob = blob;
       task.resultUrl = URL.createObjectURL(blob);
@@ -194,12 +197,17 @@ export default function App() {
           step="0.05"
           value={quality}
           onChange={(e) => setQuality(Number(e.target.value))}
+          disabled={!enableCompress}
         />
 
         {/* 分开的功能按钮 */}
-        <button onClick={compressOnly}>仅压缩图片</button>
+        <button onClick={compressOnly} disabled={!enableCompress}>
+          仅压缩图片
+        </button>
         <button onClick={convertOnly}>仅转换格式</button>
-        <button onClick={startProcess}>压缩并转换</button>
+        <button onClick={startProcess} disabled={!enableCompress}>
+          压缩并转换
+        </button>
         <button
           className="secondary"
           onClick={handleExport}
