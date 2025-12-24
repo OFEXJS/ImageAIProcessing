@@ -13,7 +13,7 @@ export default function App() {
   const [tasks, setTasks] = useState<ImageTask[]>([]);
   const [format, setFormat] = useState("image/png"); // 设置默认格式为PNG
   const [quality, setQuality] = useState(0.8);
-  const [enableCompress, setEnableCompress] = useState(true); // 默认启用压缩
+  const [enableCompress, setEnableCompress] = useState(false); // 默认启用压缩
 
   function addFiles(files: File[]) {
     setTasks((prev) => [
