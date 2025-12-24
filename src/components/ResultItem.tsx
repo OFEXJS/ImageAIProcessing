@@ -1,5 +1,24 @@
 import { type ImageTask } from "../types/image";
 
+// 添加提取文件后缀名的辅助函数
+const getFileExtension = (fileName: string) => {
+  const match = fileName.match(/\.([^.]+)$/);
+  return match ? match[1].toUpperCase() : 'FILE';
+};
+
+// 添加动态生成错误占位图SVG的函数
+const generateErrorSvg = (fileName: string) => {
+  const ext = getFileExtension(fileName);
+  const svgContent = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+      <rect width="200" height="200" fill="#f0f0f0"/>
+      <circle cx="100" cy="100" r="60" fill="none" stroke="#cccccc" stroke-width="4"/>
+      <text x="100" y="115" font-family="Arial, sans-serif" font-size="40" font-weight="bold" text-anchor="middle" fill="#666666">${ext}</text>
+    </svg>
+  `;
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgContent)));
+};
+
 export default function ResultItem({
   task,
   onSelect,
@@ -35,12 +54,22 @@ export default function ResultItem({
           src={task.originUrl}
           alt="原始图片"
           className="result-image result-image-origin"
+          onError={(e) => {
+            const img = e.target as HTMLImageElement;
+            img.src = generateErrorSvg(task.file.name);
+            img.onerror = null;
+          }}
         />
         {task.resultUrl && (
           <img
             src={task.resultUrl}
             alt="处理后图片"
             className="result-image result-image-processed"
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              img.src = generateErrorSvg(task.file.name);
+              img.onerror = null;
+            }}
           />
         )}
       </div>
