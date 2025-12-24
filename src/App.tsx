@@ -2,6 +2,7 @@ import { useState } from "react";
 import UploadArea from "./components/UploadArea";
 import ResultList from "./components/ResultList";
 import FormatSelector from "./components/FormatSelector";
+import BackgroundAnimation from "./components/BackgroundAnimation";
 import { type ImageTask } from "./types/image";
 import { convertByCanvas } from "./utils/imageConvert";
 import { safeCompress } from "./utils/imageCompress";
@@ -169,6 +170,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <BackgroundAnimation />
       <div className="card">
         <UploadArea onFiles={addFiles} />
       </div>
